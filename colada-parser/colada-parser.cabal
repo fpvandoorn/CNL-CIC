@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: d43321cf45334abd9773af1da8705cb69fc8e5ee9edfc4cccecb6e9a4a01a69c
+-- hash: c450e44b245f69785f7eb67036ef33412221471012f49c1516e2159bc5ce5364
 
 name:           colada-parser
 version:        0.1.0.0
@@ -45,6 +45,8 @@ library
       Colada.Term
       Colada.Tests
       Colada.Theorem
+      Colada.Transformations.Test
+      Colada.Transformations.Transformation
       Colada.Type
   other-modules:
       Paths_colada_parser
