@@ -30,9 +30,53 @@ import Control.Lens
 -- import Colada.Pattern
 import Colada.Type
 
-anyNameSplitAnd :: AnyName -> AnyName
-anyNameSplitAnd
+-- anyNameSplitAnd :: AnyName -> AnyName
+-- anyNameSplitAnd
 
+
+freshVariableAux :: [Text] -> Text -> Int -> Text
+freshVariableAux xs x n = if x <> pack (show n) `elem` xs then freshVariableAux xs x (n+1) else x <> pack (show n)
+
+-- generate a fresh variable.
+-- todo: these might not currently be accepted as variables
+freshVariable :: [Text] -> Text -> Text
+freshVariable xs x = if x `elem` xs then freshVariableAux xs x 2 else x
+
+-- add fresh variables to
+-- addFreshVariables :: Statement -> Statement
+-- addFreshVariables (HeadStatement )
+
+addFreshVariables :: [Text] -> ParsedPatt -> ParsedPatt
+addFreshVariables bvs (ParsedName []) := ParsedName [freshVariable bvs "x"]
+addFreshVariables bvs x := x
+
+-- data Quantifier =
+--     QuantifierAll
+--   | QuantifierEx
+--   | QuantifierNotAll
+--   | QunatifierNotEx
+--   deriving (Show, Eq)
+
+
+normalizeLitAny :: [Text] -> [Text]
+normalizeLitAny ["every"] = ["every"]
+normalizeLitAny ["each"] = ["every"]
+normalizeLitAny ["each","and","every"] = ["every"]
+normalizeLitAny ["all"] = ["every"]
+normalizeLitAny ["any"] = ["every"]
+normalizeLitAny ["some"] = ["some"]
+normalizeLitAny ["no"] = ["no"]
+normalizeLitAny _ = error "Unknown quantifier"
+
+-- part of 1.4.1(3)
+normalizeAnyName :: AnyName -> AnyName -- todo: recursive
+normalizeAnyName (AnyNameAnyArgs q t)       = AnyNameAnyArgs (normalizeLitAny q) t
+normalizeAnyName (AnyNameTypedName q t)     = AnyNameTypedName (normalizeLitAny q) t
+normalizeAnyName (AnyNameFreePredicate q t) = AnyNameFreePredicate (normalizeLitAny q) t
+normalizeAnyName (AnyNameGeneralType q t)   = AnyNameGeneralType (normalizeLitAny q) t
+
+-- split and-chains of quantifiers. 1.4.1(2) in [Paskevich]
 headStatementSplitAnd :: HeadStatement -> HeadStatement
-headStatementSplitAnd (HeadStatementForAny (x1:x2:xs) s) = HeadStatementForAny (x2:x1:xs) s
+headStatementSplitAnd (HeadStatementForAny (x1:x2:xs) s) =
+    HeadStatementForAny [x1] $ HeadStatement $ headStatementSplitAnd $ HeadStatementForAny (x2:xs) s
 headStatementSplitAnd hs = hs
