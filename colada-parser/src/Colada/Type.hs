@@ -488,7 +488,7 @@ parseOptArgs = (brace_semi $ do
   mct <- option parseColonType
   return (va, mct)) >>= return . OptArgs
 
-
+--- A sequence of variables, or a notion, free predicate or general type.
 data AnyName =
     AnyNameAnyArgs [Text] [AnyArg]
   | AnyNameTypedName [Text] TypedName
@@ -503,12 +503,14 @@ parseAnyName =
   AnyNameFreePredicate <$> parseLitAny <*> parseFreePredicate <||>
   AnyNameGeneralType <$> parseLitAny <*> parseGeneralType
 
+--- class nouns
 newtype TypedName = TypedName (Attribute TypedNameWithoutAttribute)
   deriving (Show, Eq)
 
 parseTypedName :: Parser TypedName
 parseTypedName = TypedName <$> parseAttribute parseTypedNameWithoutAttribute
 
+--- class nouns without attributes to form notions
 data TypedNameWithoutAttribute =
     TypedNamePrimTypedName PrimTypedName
   | TypedNameTVar TVar
@@ -1074,6 +1076,7 @@ newtype HoldingVar = HoldingVar (Maybe [Var]) -- for the parse to succeed, must 
 parseHoldingVar :: Parser HoldingVar
 parseHoldingVar = HoldingVar <$> (option $ parseLit "holding" *> (sepby1 parseVar (parseComma)))
 
+--- type `a` with attributes
 data Attribute a = Attribute [LeftAttribute] a (Maybe RightAttribute)
   deriving (Show, Eq)
 
@@ -1102,6 +1105,7 @@ parseRightAttribute =
   RightAttributeDoesPred <$> sep_list (parseDoesPred) <||>
   RightAttributeStatement <$> (parseLit "such" *> parseLit "that" *> parseStatement)
 
+--- either a variable or a sequence of variables of the same type
 data AnyArg =
     AnyArgVar Var
   | AnyArgAnnotatedVars AnnotatedVars
@@ -1127,12 +1131,14 @@ patternOfAnnotatedVar (AnnotatedVar varmodifier var mct) = patternOfVar var
 parseAnnotatedVar :: Parser AnnotatedVar
 parseAnnotatedVar = paren $ AnnotatedVar <$> parseVarModifier <*> (parseVar) <*> option parseColonType
 
+--- A sequence of variables that all have the same binder type and optionally a specified type?
 data AnnotatedVars = AnnotatedVars VarModifier [Var] (Maybe ColonType)
   deriving (Show, Eq)
 
 parseAnnotatedVars :: Parser AnnotatedVars
 parseAnnotatedVars = paren $ AnnotatedVars <$> parseVarModifier <*> (many1' parseVar) <*> option parseColonType
 
+--- presumably the binder types of Lean
 newtype VarModifier = VarModifier (Maybe [Text]) -- this is parsed as an optional LitVarMod
   deriving (Show, Eq)
 

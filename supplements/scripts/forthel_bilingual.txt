@@ -33,8 +33,8 @@ rightAttribute -
 primSimpleAdjective -
 primSimpleAdjectiveM -
 notion - named_term
-classNoun -
-classRelation - free_predicate
+classNoun -  - TypedName
+classRelation - free_predicate - FreePredicate
 
 1.3.3 Terms -
 term -
